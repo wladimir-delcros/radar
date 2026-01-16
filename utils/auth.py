@@ -27,14 +27,26 @@ def load_auth_config() -> dict:
         if hasattr(st, 'secrets') and st.secrets:
             secrets_auth = st.secrets.get('auth', {})
             if secrets_auth:
-                # Si on a un password_hash directement dans secrets.auth
+                # Si on a des users directement dans secrets.auth
+                if 'users' in secrets_auth:
+                    auth_config['users'] = secrets_auth['users']
+                    auth_config['enabled'] = secrets_auth.get('enabled', True)
+                    return auth_config
+                # Fallback: ancien format avec password_hash
                 if 'password_hash' in secrets_auth:
-                    auth_config['password_hash'] = secrets_auth['password_hash']
+                    # Convertir en nouveau format
+                    auth_config['users'] = [{
+                        'username': 'admin',
+                        'password_hash': secrets_auth['password_hash']
+                    }]
                     auth_config['enabled'] = secrets_auth.get('enabled', True)
                     return auth_config
                 # Sinon, essayer APP_PASSWORD_HASH comme variable d'environnement
                 if 'APP_PASSWORD_HASH' in st.secrets:
-                    auth_config['password_hash'] = st.secrets['APP_PASSWORD_HASH']
+                    auth_config['users'] = [{
+                        'username': 'admin',
+                        'password_hash': st.secrets['APP_PASSWORD_HASH']
+                    }]
                     auth_config['enabled'] = True
                     return auth_config
     except Exception:
@@ -43,7 +55,10 @@ def load_auth_config() -> dict:
     # Priorité 2: Variables d'environnement (pour Railway, Render, etc.)
     env_password_hash = os.getenv('APP_PASSWORD_HASH')
     if env_password_hash:
-        auth_config['password_hash'] = env_password_hash
+        auth_config['users'] = [{
+            'username': 'admin',
+            'password_hash': env_password_hash
+        }]
         auth_config['enabled'] = True
         return auth_config
     
@@ -52,7 +67,15 @@ def load_auth_config() -> dict:
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                 config = json.load(f)
-                return config.get('auth', {})
+                auth_config = config.get('auth', {})
+                # Migration: convertir l'ancien format password_hash vers users
+                if 'password_hash' in auth_config and 'users' not in auth_config:
+                    auth_config['users'] = [{
+                        'username': 'admin',
+                        'password_hash': auth_config['password_hash']
+                    }]
+                    # Garder password_hash pour compatibilité mais prioriser users
+                return auth_config
         except Exception:
             pass
     
@@ -143,19 +166,24 @@ def render_login_form() -> bool:
     
     with col2:
         st.markdown("### Connexion requise")
-        st.info("Veuillez entrer le mot de passe pour accéder à l'application.")
+        st.info("Veuillez entrer vos identifiants pour accéder à l'application.")
         
         with st.form("login_form"):
-            password = st.text_input("Mot de passe", type="password", autofocus=True)
+            username = st.text_input("Nom d'utilisateur", autofocus=True, placeholder="admin")
+            password = st.text_input("Mot de passe", type="password")
             submit_button = st.form_submit_button("Se connecter", use_container_width=True)
             
             if submit_button:
-                if verify_password(password):
-                    set_authenticated(True)
-                    st.success("✅ Authentification réussie !")
-                    st.rerun()
+                if username and password:
+                    if verify_credentials(username, password):
+                        set_authenticated(True)
+                        st.session_state['authenticated_username'] = username
+                        st.success("✅ Authentification réussie !")
+                        st.rerun()
+                    else:
+                        st.error("❌ Nom d'utilisateur ou mot de passe incorrect.")
                 else:
-                    st.error("❌ Mot de passe incorrect. Veuillez réessayer.")
+                    st.error("❌ Veuillez remplir tous les champs.")
     
     return False
 

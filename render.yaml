@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: leadflow
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: RAPIDAPI_KEY
+        sync: false
+      - key: RAPIDAPI_HOST
+        value: linkedin-scraper-api-real-time-fast-affordable.p.rapidapi.com
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: APP_PASSWORD_HASH
+        sync: false

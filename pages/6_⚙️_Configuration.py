@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 
 sys.path.append(str(Path(__file__).parent.parent))
-from utils.auth import require_auth, is_auth_enabled, set_password, verify_password
+from utils.auth import require_auth, is_auth_enabled, set_password, verify_password, get_users, add_user, delete_user, verify_credentials
 from utils.config_manager import load_config, save_config
 from utils.session import render_client_selector, get_active_client_id
 from utils.database import (
@@ -247,43 +247,63 @@ with tab3:
     st.subheader("🔐 Sécurité de l'Application")
     
     auth_enabled = is_auth_enabled()
+    users = get_users()
     
-    st.markdown("### Protection par mot de passe")
+    st.markdown("### Protection par authentification")
     
     if auth_enabled:
-        st.success("✅ L'authentification est activée. Un mot de passe est requis pour accéder à l'application.")
+        st.success(f"✅ L'authentification est activée. {len(users)} utilisateur(s) configuré(s).")
     else:
-        st.warning("⚠️ L'authentification n'est pas activée. L'application est accessible sans mot de passe.")
+        st.warning("⚠️ L'authentification n'est pas activée. L'application est accessible sans authentification.")
     
     st.markdown("---")
     
-    # Définir un nouveau mot de passe
-    st.markdown("### Définir / Modifier le mot de passe")
+    # Gestion des utilisateurs
+    st.markdown("### 👥 Gestion des utilisateurs")
     
-    with st.form("password_form"):
-        new_password = st.text_input("Nouveau mot de passe", type="password", help="Le mot de passe sera hashé et stocké de manière sécurisée")
+    if users:
+        st.markdown("#### Utilisateurs existants")
+        for i, user in enumerate(users):
+            col1, col2, col3 = st.columns([3, 1, 1])
+            with col1:
+                st.text(f"👤 {user.get('username', 'admin')}")
+            with col2:
+                if st.button("🗑️ Supprimer", key=f"del_user_{i}", use_container_width=True):
+                    delete_user(user.get('username', 'admin'))
+                    st.success(f"✅ Utilisateur '{user.get('username', 'admin')}' supprimé.")
+                    st.rerun()
+            st.markdown("---")
+    
+    # Ajouter/Modifier un utilisateur
+    st.markdown("#### Ajouter / Modifier un utilisateur")
+    
+    with st.form("user_form"):
+        username = st.text_input("Nom d'utilisateur", placeholder="admin", help="Le nom d'utilisateur pour se connecter")
+        new_password = st.text_input("Mot de passe", type="password", help="Le mot de passe sera hashé et stocké de manière sécurisée")
         confirm_password = st.text_input("Confirmer le mot de passe", type="password")
         
         col1, col2 = st.columns(2)
         with col1:
-            submit_password = st.form_submit_button("💾 Définir le mot de passe", use_container_width=True)
+            submit_user = st.form_submit_button("💾 Enregistrer l'utilisateur", use_container_width=True)
         with col2:
             if auth_enabled:
                 disable_auth = st.form_submit_button("🔓 Désactiver l'authentification", use_container_width=True, type="secondary")
             else:
                 disable_auth = False
         
-        if submit_password:
-            if not new_password:
+        if submit_user:
+            if not username:
+                st.error("❌ Le nom d'utilisateur ne peut pas être vide.")
+            elif not new_password:
                 st.error("❌ Le mot de passe ne peut pas être vide.")
             elif new_password != confirm_password:
                 st.error("❌ Les mots de passe ne correspondent pas.")
             elif len(new_password) < 4:
                 st.error("❌ Le mot de passe doit contenir au moins 4 caractères.")
             else:
-                set_password(new_password)
-                st.success("✅ Mot de passe défini avec succès ! L'authentification est maintenant activée.")
-                st.info("ℹ️ Vous devrez vous reconnecter avec ce nouveau mot de passe.")
+                add_user(username, new_password)
+                st.success(f"✅ Utilisateur '{username}' enregistré avec succès ! L'authentification est maintenant activée.")
+                st.info("ℹ️ Vous devrez vous reconnecter avec ces identifiants.")
                 st.rerun()
         
         if disable_auth:
@@ -294,20 +314,21 @@ with tab3:
             st.success("✅ Authentification désactivée.")
             st.rerun()
     
-    # Tester le mot de passe actuel
-    if auth_enabled:
+    # Tester les identifiants
+    if auth_enabled and users:
         st.markdown("---")
-        st.markdown("### Tester le mot de passe actuel")
+        st.markdown("### 🔍 Tester les identifiants")
         
-        with st.form("test_password_form"):
-            test_password = st.text_input("Mot de passe actuel", type="password")
+        with st.form("test_credentials_form"):
+            test_username = st.selectbox("Utilisateur", options=[u.get('username', 'admin') for u in users])
+            test_password = st.text_input("Mot de passe", type="password")
             test_submit = st.form_submit_button("🔍 Tester", use_container_width=True)
             
             if test_submit:
-                if verify_password(test_password):
-                    st.success("✅ Le mot de passe est correct.")
+                if verify_credentials(test_username, test_password):
+                    st.success("✅ Les identifiants sont corrects.")
                 else:
-                    st.error("❌ Le mot de passe est incorrect.")
+                    st.error("❌ Le nom d'utilisateur ou le mot de passe est incorrect.")
 
 # ============== Tab 2: Gestion des Clients ==============
 with tab2:
