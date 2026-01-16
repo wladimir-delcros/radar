@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Logs
+*.log
+
+# Données
+data/
+*.json
+!config.json.example
+!company_profile.json.example
+
+# CSV (garder l'exemple mais ignorer si modifié)
+!companies_to_follow.csv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config (contient la clé API)
+config.json
+
+# Streamlit
+.streamlit/

@@ -1,0 +1,14 @@
+{
+  "api_key": "VOTRE_CLE_API_RAPIDAPI",
+  "api_host": "linkedin-scraper-api-real-time-fast-affordable.p.rapidapi.com",
+  "limit": 1,
+  "output_directory": "data",
+  "openai": {
+    "api_key": "VOTRE_CLE_OPENAI",
+    "model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 500,
+    "enabled": true,
+    "relevance_threshold": 0.6
+  }
+}

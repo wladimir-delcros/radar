@@ -1,0 +1,72 @@
+{
+  "company_name": "Uclic",
+  "company_description": "Description détaillée de ce que fait votre entreprise. Exemple: Plateforme SaaS B2B spécialisée dans l'automatisation des campagnes marketing LinkedIn.",
+  "products_services": [
+    "Automatisation des campagnes LinkedIn",
+    "Génération de leads B2B",
+    "Outbound automation"
+  ],
+  "target_persona": {
+    "job_titles": [
+      "Head of Growth",
+      "Growth Manager",
+      "CMO",
+      "Marketing Director",
+      "VP Marketing"
+    ],
+    "company_types": [
+      "Startups tech",
+      "Scale-ups",
+      "PME B2B"
+    ],
+    "industries": [
+      "SaaS",
+      "Tech",
+      "E-commerce",
+      "Services B2B"
+    ],
+    "company_size": "10-500 employés",
+    "geographic_location": "France, Belgique, Suisse",
+    "pain_points": [
+      "Difficultés à générer des leads qualifiés",
+      "Manque de temps pour l'outbound manuel",
+      "Campagnes LinkedIn peu performantes",
+      "Besoin d'automatiser la prospection"
+    ],
+    "characteristics": [
+      "Responsable du marketing/acquisition",
+      "Budget marketing disponible",
+      "Outil de prospection actif",
+      "Intérêt pour l'automatisation"
+    ]
+  },
+  "competitor_companies": {
+    "scraped_companies": [
+      "Growthroom",
+      "Growth Room",
+      "Autres concurrents à surveiller"
+    ],
+    "why_contact_on_their_posts": "Les personnes qui réagissent aux posts de nos concurrents sont des prospects qualifiés car ils montrent un intérêt pour des problématiques que nous résolvons. C'est l'occasion idéale de les contacter avec une offre pertinente."
+  },
+  "outreach_strategy": {
+    "what_offers": "Plateforme d'automatisation des campagnes LinkedIn pour générer des leads B2B qualifiés",
+    "value_proposition": "Automatisez vos campagnes LinkedIn et générez 3x plus de leads qualifiés sans effort manuel",
+    "ideal_signals": [
+      "Réagit à des posts sur le marketing B2B",
+      "Réagit à des posts sur la génération de leads",
+      "Poste sur les défis du marketing/acquisition",
+      "Titre lié au marketing/growth"
+    ],
+    "message_template": {
+      "tone": "professionnel, amical, concis",
+      "structure": "référence au post + connexion avec votre solution + question ouverte",
+      "key_points": [
+        "Mentionner spécifiquement le post et le sujet abordé",
+        "Expliquer comment votre solution résout cette problématique",
+        "Poser une question ouverte pour créer l'engagement"
+      ],
+      "call_to_action": "Échange ou appel découverte",
+      "example": "Bonjour [Nom], je te contacte car j'ai vu que tu as réagi au post de [Entreprise] sur [sujet]. C'est une problématique que nous résolvons chez [Votre entreprise] via [solution]. Est-ce que c'est quelque chose que vous rencontrez chez [Entreprise prospect] ?"
+    }
+  }
+}
