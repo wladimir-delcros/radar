@@ -4,6 +4,7 @@ Module d'authentification pour l'application Streamlit
 import streamlit as st
 import hashlib
 import json
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -17,7 +18,36 @@ def get_password_hash(password: str) -> str:
 
 
 def load_auth_config() -> dict:
-    """Charge la configuration d'authentification depuis config.json"""
+    """Charge la configuration d'authentification depuis config.json ou secrets Streamlit"""
+    auth_config = {}
+    
+    # Priorité 1: Secrets Streamlit Cloud (pour le déploiement)
+    try:
+        # Essayer de lire depuis st.secrets (Streamlit Cloud)
+        if hasattr(st, 'secrets') and st.secrets:
+            secrets_auth = st.secrets.get('auth', {})
+            if secrets_auth:
+                # Si on a un password_hash directement dans secrets.auth
+                if 'password_hash' in secrets_auth:
+                    auth_config['password_hash'] = secrets_auth['password_hash']
+                    auth_config['enabled'] = secrets_auth.get('enabled', True)
+                    return auth_config
+                # Sinon, essayer APP_PASSWORD_HASH comme variable d'environnement
+                if 'APP_PASSWORD_HASH' in st.secrets:
+                    auth_config['password_hash'] = st.secrets['APP_PASSWORD_HASH']
+                    auth_config['enabled'] = True
+                    return auth_config
+    except Exception:
+        pass
+    
+    # Priorité 2: Variables d'environnement (pour Railway, Render, etc.)
+    env_password_hash = os.getenv('APP_PASSWORD_HASH')
+    if env_password_hash:
+        auth_config['password_hash'] = env_password_hash
+        auth_config['enabled'] = True
+        return auth_config
+    
+    # Priorité 3: Fichier config.json local (pour développement)
     if CONFIG_FILE.exists():
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
@@ -25,7 +55,8 @@ def load_auth_config() -> dict:
                 return config.get('auth', {})
         except Exception:
             pass
-    return {}
+    
+    return auth_config
 
 
 def save_auth_config(auth_config: dict):
